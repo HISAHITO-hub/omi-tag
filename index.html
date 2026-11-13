@@ -28,6 +28,8 @@ a.btn{display:block;text-align:center;background:var(--ai);color:var(--panel);bo
 details{margin-top:12px}
 summary{cursor:pointer;color:var(--ai);font-weight:700}
 .cond{font-size:14px;color:var(--sub);white-space:pre-wrap;margin-top:6px}
+h2{font-size:16px;margin:16px 0 4px;color:var(--sub);letter-spacing:.06em}
+.ja{font-size:17px;line-height:1.8}
 form{display:flex;gap:8px;align-items:center}
 input{flex:1;min-width:0;font:600 22px ui-monospace,Menlo,monospace;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
 button{font:700 17px inherit;padding:11px 20px;border:0;border-radius:8px;background:var(--ai);color:var(--panel)}
@@ -59,7 +61,7 @@ function show(n){
   const wait=["未着","検品待ち"].includes(it.stage);
   const rows=[];
   if(it.serial)rows.push(["製番",esc(it.serial)]);
-  if(it.bundled)rows.push(["付属品",esc(it.bundled)]);
+  if(it.bundled_ja||it.bundled)rows.push(["付属品",esc(it.bundled_ja||it.bundled)]);
   if(it.price)rows.push(["出品の値段",'<span class="price">$'+esc(it.price)+'</span>']);
   rows.push(["管理番号",esc(it.sku)]);
   c.innerHTML='<div class="no">No.'+it.no+'</div>'
@@ -69,7 +71,8 @@ function show(n){
    +'<h1>'+esc(it.ja||it.en)+'</h1>'+(it.ja&&it.en?'<div class="en">'+esc(it.en)+'</div>':'')
    +'<dl>'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>').join("")+'</dl>'
    +(it.listing?'<a class="btn" href="https://www.ebay.com/itm/'+esc(it.listing)+'" rel="noopener">eBay の出品ページを開く</a>':'')
-   +(it.cond?'<details><summary>状態の説明（英文）</summary><div class="cond">'+esc(it.cond)+'</div></details>':'');
+   +(it.cond_ja?'<h2>状態</h2><div class="ja">'+esc(it.cond_ja).replace(/。(?!$)/g,"。<br>")+'</div>':'')
+   +(it.cond?'<details'+(it.cond_ja?'':' open')+'><summary>'+(it.cond_ja?'英語の原文（eBay に出している文）':'状態の説明（日本語訳はまだありません・英文）')+'</summary><div class="cond">'+esc(it.cond)+'</div></details>':'');
   document.title="No."+it.no+" "+(it.ja||it.en||"");
 }
 $("#f").addEventListener("submit",ev=>{ev.preventDefault();const n=String(Number(($("#n").value.match(/\d+/)||[""])[0]));
