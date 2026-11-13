@@ -30,6 +30,7 @@ summary{cursor:pointer;color:var(--ai);font-weight:700}
 .cond{font-size:14px;color:var(--sub);white-space:pre-wrap;margin-top:6px}
 h2{font-size:16px;margin:16px 0 4px;color:var(--sub);letter-spacing:.06em}
 .ja{font-size:17px;line-height:1.8}
+.yen{color:var(--sub);font-size:15px}
 form{display:flex;gap:8px;align-items:center}
 input{flex:1;min-width:0;font:600 22px ui-monospace,Menlo,monospace;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
 button{font:700 17px inherit;padding:11px 20px;border:0;border-radius:8px;background:var(--ai);color:var(--panel)}
@@ -60,9 +61,10 @@ function show(n){
   if(!it){c.innerHTML='<div class="no">No.'+esc(n)+'</div><p class="msg">この番号はまだ載っていません。</p>';return}
   const wait=["未着","検品待ち"].includes(it.stage);
   const rows=[];
-  if(it.serial)rows.push(["製番",esc(it.serial)]);
+  const sj=String(it.serial||"").replace(/Body/gi,"ボディ").replace(/Lens/gi,"レンズ").replace(/\(body\)/gi,"（ボディ）").replace(/\s*\(shown in the photos\)/gi,"").replace(/\s*\/\s*/g,"／");
+  if(sj)rows.push(["製番",esc(sj)]);
   if(it.bundled_ja||it.bundled)rows.push(["付属品",esc(it.bundled_ja||it.bundled)]);
-  if(it.price)rows.push(["出品の値段",'<span class="price">$'+esc(it.price)+'</span>']);
+  if(it.price)rows.push(["出品の値段",'<span class="price">$'+esc(it.price)+'</span> <span class="yen">（約'+Math.round(Number(it.price)*158).toLocaleString()+'円）</span>']);
   rows.push(["管理番号",esc(it.sku)]);
   c.innerHTML='<div class="no">No.'+it.no+'</div>'
    +'<div class="pills">'+(it.grade?'<span class="pill g">'+esc(it.grade)+'</span>':'')
