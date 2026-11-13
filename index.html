@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>OMI 札ページ</title>
+<style>
+:root{--bg:#f2f3f1;--panel:#fff;--ink:#1c2225;--sub:#5a656a;--line:#d8dcd9;--ai:#24476b;--ai-soft:#e2eaf2;--done:#2f6b45;--done-soft:#e1efe5;--bad:#a3262a;--bad-soft:#f8e3e3}
+@media (prefers-color-scheme:dark){:root{--bg:#14181a;--panel:#1c2225;--ink:#e6eaeb;--sub:#9aa6ab;--line:#313a3e;--ai:#8db6dd;--ai-soft:#21313e;--done:#7cc79a;--done-soft:#1b3125;--bad:#f08a8d;--bad-soft:#3a1f20}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 60px;display:grid;gap:14px}
+header{font-size:13px;color:var(--sub);letter-spacing:.08em;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.no{font:800 44px/1.1 ui-monospace,Menlo,monospace}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.pill{border-radius:999px;padding:2px 14px;font-size:15px;font-weight:700;border:1.5px solid var(--line)}
+.pill.g{background:var(--ai-soft);color:var(--ai);border-color:transparent}
+.pill.s{background:var(--done-soft);color:var(--done);border-color:transparent}
+.pill.s.wait{background:var(--bad-soft);color:var(--bad)}
+.pill.t{border-color:var(--ink)}
+h1{font-size:21px;line-height:1.45;margin:6px 0 2px}
+.en{font-size:14px;color:var(--sub);overflow-wrap:anywhere}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:12px 0 0}
+dt{color:var(--sub);font-size:15px;white-space:nowrap}
+dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.price{font:700 24px ui-monospace,Menlo,monospace}
+a.btn{display:block;text-align:center;background:var(--ai);color:var(--panel);border-radius:8px;padding:12px;font-weight:700;text-decoration:none;margin-top:12px}
+details{margin-top:12px}
+summary{cursor:pointer;color:var(--ai);font-weight:700}
+.cond{font-size:14px;color:var(--sub);white-space:pre-wrap;margin-top:6px}
+form{display:flex;gap:8px;align-items:center}
+input{flex:1;min-width:0;font:600 22px ui-monospace,Menlo,monospace;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+button{font:700 17px inherit;padding:11px 20px;border:0;border-radius:8px;background:var(--ai);color:var(--panel)}
+.msg{color:var(--sub);font-size:15px}
+.upd{font-size:12px;color:var(--sub);text-align:right}
+</style></head><body>
+<div class="wrap">
+  <header>OMI &amp; CO. ／ 札ページ</header>
+  <div id="card" class="card"><p class="msg">読み込んでいます…</p></div>
+  <div class="card">
+    <form id="f" autocomplete="off"><input id="n" inputmode="numeric" pattern="[0-9]*" placeholder="ほかの番号（例 168）" aria-label="札の番号"><button>開く</button></form>
+  </div>
+  <div class="upd" id="upd"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let items=null;
+function want(){
+  const q=new URLSearchParams(location.search).get("n")||decodeURIComponent(location.hash||"");
+  const m=String(q).match(/(\d{1,4})\s*$/);return m?String(Number(m[1])):"";
+}
+function show(n){
+  const c=$("#card");
+  if(!items){c.innerHTML='<p class="msg">読み込んでいます…</p>';return}
+  if(!n){c.innerHTML='<p class="msg">下の欄に札の番号を入れてください。</p>';return}
+  const it=items[n];
+  if(!it){c.innerHTML='<div class="no">No.'+esc(n)+'</div><p class="msg">この番号はまだ載っていません。</p>';return}
+  const wait=["未着","検品待ち"].includes(it.stage);
+  const rows=[];
+  if(it.serial)rows.push(["製番",esc(it.serial)]);
+  if(it.bundled)rows.push(["付属品",esc(it.bundled)]);
+  if(it.price)rows.push(["出品の値段",'<span class="price">$'+esc(it.price)+'</span>']);
+  rows.push(["管理番号",esc(it.sku)]);
+  c.innerHTML='<div class="no">No.'+it.no+'</div>'
+   +'<div class="pills">'+(it.grade?'<span class="pill g">'+esc(it.grade)+'</span>':'')
+   +(it.stage?'<span class="pill s'+(wait?' wait':'')+'">'+esc(it.stage)+'</span>':'')
+   +'<span class="pill t">棚 '+(it.shelf?esc(it.shelf):'未設定')+'</span></div>'
+   +'<h1>'+esc(it.ja||it.en)+'</h1>'+(it.ja&&it.en?'<div class="en">'+esc(it.en)+'</div>':'')
+   +'<dl>'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>').join("")+'</dl>'
+   +(it.listing?'<a class="btn" href="https://www.ebay.com/itm/'+esc(it.listing)+'" rel="noopener">eBay の出品ページを開く</a>':'')
+   +(it.cond?'<details><summary>状態の説明（英文）</summary><div class="cond">'+esc(it.cond)+'</div></details>':'');
+  document.title="No."+it.no+" "+(it.ja||it.en||"");
+}
+$("#f").addEventListener("submit",ev=>{ev.preventDefault();const n=String(Number(($("#n").value.match(/\d+/)||[""])[0]));
+  if(n&&n!=="0"){history.replaceState(null,"","?n="+n);show(n);$("#n").value="";$("#n").blur();scrollTo(0,0)}});
+addEventListener("hashchange",()=>show(want()));
+fetch("items.json?t="+Date.now(),{cache:"no-store"}).then(r=>{
+  const lm=r.headers.get("last-modified");if(lm)$("#upd").textContent="データの更新 "+new Date(lm).toLocaleString("ja-JP");
+  return r.json()}).then(j=>{items=j;show(want())})
+ .catch(()=>{$("#card").innerHTML='<p class="msg">データを読み込めませんでした。電波を確かめて、もう一度開いてください。</p>'});
+</script>
+</body></html>
